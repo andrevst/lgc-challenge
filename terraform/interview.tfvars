@@ -1,0 +1,10 @@
+project        = "interview"
+subnet_count   = 2
+cluster_name   = "interview-cluster"
+retention_days = 7
+desired_size   = 2
+max_size       = 3
+min_size       = 1
+instance_type  = "t3.medium"
+capacity_type  = "ON_DEMAND"
+cidr_block     = "10.25.0.0/16"
