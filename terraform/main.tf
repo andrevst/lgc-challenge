@@ -22,10 +22,14 @@ module "host" {
   private_subnet_ids = module.network.private_subnet_ids
 }
 
-module "addons" {
-  source       = "./modules/addons"
+module "load_balancer" {
+  source       = "./modules/load_balancer"
   depends_on   = [module.host]
   cluster_name = var.cluster_name
   region       = var.region
   vpc_id       = module.network.vpc_id
+  subnet_ids   = module.network.public_subnet_ids
+  zone_id      = var.zone_id
+  domain       = var.domain
+  project      = var.project
 }

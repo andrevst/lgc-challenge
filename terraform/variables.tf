@@ -6,6 +6,16 @@ variable "project" {
   description = "Project name"
 }
 
+variable "zone_id" {
+  description = "Route 53 Hosted Zone ID"
+  type        = string
+}
+
+variable "domain" {
+  description = "Base domain name"
+  type        = string
+}
+
 variable "cidr_block" {
   description = "CIDR block for the VPC"
 }

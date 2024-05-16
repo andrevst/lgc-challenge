@@ -1,5 +1,7 @@
 region               = "us-west-1"
 project              = "interviewlgc"
+zone_id              = "Z011966476AFOO7K89EI"
+domain               = "sbx.arqui.dev"
 cluster_name         = "interviewlgc-cluster"
 retention_days       = 7
 desired_size         = 2
