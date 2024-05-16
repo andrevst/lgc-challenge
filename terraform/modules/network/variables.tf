@@ -1,3 +1,4 @@
 variable "project" {}
 variable "cidr_block" {}
-variable "subnet_count" {}
+variable "public_subnet_cidrs" {}
+variable "private_subnet_cidrs" {}

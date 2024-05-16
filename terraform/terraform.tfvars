@@ -1,0 +1,12 @@
+region               = "us-west-1"
+project              = "interviewlgc"
+cluster_name         = "interviewlgc-cluster"
+retention_days       = 7
+desired_size         = 2
+max_size             = 3
+min_size             = 1
+instance_type        = "t3.micro"
+capacity_type        = "ON_DEMAND"
+cidr_block           = "10.25.0.0/16"
+public_subnet_cidrs  = ["10.25.0.0/20", "10.25.16.0/20"]
+private_subnet_cidrs = ["10.25.48.0/20", "10.25.64.0/20"]

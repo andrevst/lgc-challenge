@@ -2,20 +2,34 @@ data "aws_availability_zones" "available_zones" {}
 
 resource "aws_vpc" "eks_vpc" {
   cidr_block = var.cidr_block
+  enable_dns_support   = true
+  enable_dns_hostnames = true
   tags = {
     Name    = "${var.project}-vpc"
     project = var.project
   }
 }
-
-resource "aws_subnet" "eks_subnets" {
-  count                   = var.subnet_count
+# Public Subnets
+resource "aws_subnet" "eks_public_subnets" {
+  count                   = length(var.public_subnet_cidrs)
   vpc_id                  = aws_vpc.eks_vpc.id
-  cidr_block              = "10.0.${count.index}.0/24"
+  cidr_block              = var.public_subnet_cidrs[count.index]
   availability_zone       = data.aws_availability_zones.available_zones.names[count.index]
   map_public_ip_on_launch = true
   tags = {
-    Name    = "${var.project}-subnet-${count.index}"
+    Name    = "${var.project}-public-subnet-${count.index}"
+    project = var.project
+  }
+}
+
+# Private Subnets
+resource "aws_subnet" "eks_private_subnets" {
+  count             = length(var.private_subnet_cidrs)
+  vpc_id            = aws_vpc.eks_vpc.id
+  cidr_block        = var.private_subnet_cidrs[count.index]
+  availability_zone = data.aws_availability_zones.available_zones.names[count.index]
+  tags = {
+    Name    = "${var.project}-private-subnet-${count.index}"
     project = var.project
   }
 }
@@ -28,21 +42,60 @@ resource "aws_internet_gateway" "eks_igw" {
   }
 }
 
-resource "aws_route_table" "eks_route_table" {
+# NAT Gateway needs an Elastic IP
+resource "aws_eip" "nat_eip" {
+  lifecycle {
+    prevent_destroy = true
+  }
+  tags = {
+    Name    = "${var.project}-nat-eip"
+    project = var.project
+  }
+}
+
+# NAT Gateway configuration
+resource "aws_nat_gateway" "nat_gateway" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = element(aws_subnet.eks_public_subnets.*.id, 0)  # Assuming NAT in the first public subnet
+  tags = {
+    Name    = "${var.project}-nat-gateway"
+    project = var.project
+  }
+  depends_on = [aws_internet_gateway.eks_igw]
+}
+
+resource "aws_route_table" "public_route_table" {
   vpc_id = aws_vpc.eks_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.eks_igw.id
   }
   tags = {
-    Name    = "${var.project}-route-table"
+    Name    = "${var.project}-public-route-table"
     project = var.project
   }
 }
 
-resource "aws_route_table_association" "subnet_association" {
-  count          = var.subnet_count
-  subnet_id      = aws_subnet.eks_subnets[count.index].id
-  route_table_id = aws_route_table.eks_route_table.id
+resource "aws_route_table_association" "public_subnet_association" {
+  count          = length(var.public_subnet_cidrs)
+  subnet_id      = element(aws_subnet.eks_public_subnets.*.id, count.index)
+  route_table_id = aws_route_table.public_route_table.id
+}
 
+resource "aws_route_table" "private_route_table" {
+  vpc_id = aws_vpc.eks_vpc.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gateway.id
+  }
+  tags = {
+    Name    = "${var.project}-private-route-table"
+    project = var.project
+  }
+}
+
+resource "aws_route_table_association" "private_subnet_association" {
+  count          = length(var.private_subnet_cidrs)
+  subnet_id      = element(aws_subnet.eks_private_subnets.*.id, count.index)
+  route_table_id = aws_route_table.private_route_table.id
 }
