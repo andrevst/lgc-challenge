@@ -44,6 +44,7 @@ resource "aws_internet_gateway" "eks_igw" {
 
 # NAT Gateway needs an Elastic IP
 resource "aws_eip" "nat_eip" {
+  count = length(aws_subnet.eks_public_subnets.*.id)
   lifecycle {
     prevent_destroy = true
   }
@@ -53,10 +54,12 @@ resource "aws_eip" "nat_eip" {
   }
 }
 
-# NAT Gateway configuration
+# NAT Gateway configuration for each public subnet
 resource "aws_nat_gateway" "nat_gateway" {
-  allocation_id = aws_eip.nat_eip.id
-  subnet_id     = element(aws_subnet.eks_public_subnets.*.id, 0)  # Assuming NAT in the first public subnet
+  count         = length(aws_subnet.eks_public_subnets.*.id)
+  allocation_id = aws_eip.nat_eip[count.index].id
+  subnet_id     = aws_subnet.eks_public_subnets[count.index].id
+
   tags = {
     Name    = "${var.project}-nat-gateway"
     project = var.project
@@ -83,19 +86,20 @@ resource "aws_route_table_association" "public_subnet_association" {
 }
 
 resource "aws_route_table" "private_route_table" {
+  count = length(aws_subnet.eks_private_subnets.*.id)
   vpc_id = aws_vpc.eks_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gateway.id
+    nat_gateway_id = aws_nat_gateway.nat_gateway[count.index].id
   }
   tags = {
-    Name    = "${var.project}-private-route-table"
+    Name    = "${var.project}-private-route-table-${count.index}"
     project = var.project
   }
 }
 
 resource "aws_route_table_association" "private_subnet_association" {
-  count          = length(var.private_subnet_cidrs)
-  subnet_id      = element(aws_subnet.eks_private_subnets.*.id, count.index)
-  route_table_id = aws_route_table.private_route_table.id
+  count          = length(aws_subnet.eks_private_subnets.*.id)
+  subnet_id      = aws_subnet.eks_private_subnets[count.index].id
+  route_table_id = aws_route_table.private_route_table[count.index].id
 }
