@@ -7,17 +7,25 @@ module "network" {
 }
 
 module "host" {
-  source         = "./modules/host"
-  depends_on     = [module.network]
-  project        = var.project
-  cluster_name   = var.cluster_name
-  cidr_block     = var.cidr_block
-  retention_days = var.retention_days
-  desired_size   = var.desired_size
-  max_size       = var.max_size
-  min_size       = var.min_size
-  instance_type  = var.instance_type
-  capacity_type  = var.capacity_type
-  vpc_id         = module.network.vpc_id
-  private_subnet_ids     = module.network.private_subnet_ids
+  source             = "./modules/host"
+  depends_on         = [module.network]
+  project            = var.project
+  cluster_name       = var.cluster_name
+  cidr_block         = var.cidr_block
+  retention_days     = var.retention_days
+  desired_size       = var.desired_size
+  max_size           = var.max_size
+  min_size           = var.min_size
+  instance_type      = var.instance_type
+  capacity_type      = var.capacity_type
+  vpc_id             = module.network.vpc_id
+  private_subnet_ids = module.network.private_subnet_ids
+}
+
+module "addons" {
+  source       = "./modules/addons"
+  depends_on   = [module.host]
+  cluster_name = var.cluster_name
+  region       = var.region
+  vpc_id       = module.network.vpc_id
 }

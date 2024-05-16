@@ -46,7 +46,7 @@ resource "aws_internet_gateway" "eks_igw" {
 resource "aws_eip" "nat_eip" {
   count = length(aws_subnet.eks_public_subnets.*.id)
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
   tags = {
     Name    = "${var.project}-nat-eip"
