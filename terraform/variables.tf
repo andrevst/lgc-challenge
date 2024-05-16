@@ -10,8 +10,14 @@ variable "cidr_block" {
   description = "CIDR block for the VPC"
 }
 
-variable "subnet_count" {
-  description = "Number of subnets"
+variable "public_subnet_cidrs" {
+  description = "List of CIDR blocks for public subnets"
+  type        = list(string)
+}
+
+variable "private_subnet_cidrs" {
+  description = "List of CIDR blocks for private subnets"
+  type        = list(string)
 }
 
 variable "cluster_name" {
