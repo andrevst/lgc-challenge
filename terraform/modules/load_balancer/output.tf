@@ -12,3 +12,7 @@ output "alb_arn" {
   description = "The ARN of the ALB"
   value       = aws_lb.application_load_balancer.arn
 }
+
+output "domain_name" {
+  value = aws_route53_record.cluster_record.name
+}

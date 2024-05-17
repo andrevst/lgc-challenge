@@ -143,3 +143,9 @@ resource "aws_eks_node_group" "node_group" {
   }
 
 }
+
+# ECR
+
+resource "aws_ecr_repository" "app_repository" {
+  name = "${var.project}-app"
+}

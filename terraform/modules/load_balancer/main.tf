@@ -74,6 +74,76 @@ resource "aws_lb" "application_load_balancer" {
   enable_deletion_protection = false
 }
 
+# Create HTTP Listener
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.application_load_balancer.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+    redirect {
+      protocol = "HTTPS"
+      port     = "443"
+      status_code = "HTTP_301"
+    }
+  }
+
+  tags = {
+    Name    = "${var.project}-http-listener"
+    project = var.project
+  }
+}
+
+# Create HTTPS Listener
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.application_load_balancer.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = aws_acm_certificate.certificate.arn
+
+  default_action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
+
+  tags = {
+    Name    = "${var.project}-https-listener"
+    project = var.project
+  }
+}
+
+# Create Target Group
+resource "aws_lb_target_group" "main" {
+  name        = "${var.project}-tg"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = "instance"
+
+  health_check {
+    path                = "/healthz"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 5
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+
+  tags = {
+    Name    = "${var.project}-tg"
+    project = var.project
+  }
+}
+
+# Attach Target Group to EKS Node Group
+resource "aws_lb_target_group_attachment" "asg" {
+  target_group_arn = aws_lb_target_group.main.arn
+  target_id        = data.aws_instances.eks_instances.ids[0]  # Update this to fetch instance IDs dynamically or use the IP target type
+  port             = 80
+}
+
 # Create DNS record for the subdomain pointing to the ALB
 resource "aws_route53_record" "cluster_record" {
   depends_on = [aws_lb.application_load_balancer]
@@ -169,5 +239,13 @@ resource "helm_release" "aws_load_balancer_controller" {
   set {
     name  = "serviceAccount.annotations.eks.amazonaws.com/role-arn"
     value = aws_iam_role.aws_lb_controller_role.arn
+  }
+}
+
+# Data source to get EKS node instance IDs
+data "aws_instances" "eks_instances" {
+  filter {
+    name   = "tag:aws:eks:cluster-name"
+    values = [var.cluster_name]
   }
 }

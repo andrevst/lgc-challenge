@@ -32,4 +32,5 @@ module "load_balancer" {
   zone_id      = var.zone_id
   domain       = var.domain
   project      = var.project
+  ng_id        = module.host.ng_id
 }
