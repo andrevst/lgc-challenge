@@ -31,11 +31,3 @@ resource "local_file" "kubeconfig" {
   content  = local.kubeconfig
   filename = "kubeconfig.yaml"
 }
-
-output "aws_ecr_repository_url" {
-  value = aws_ecr_repository.app_repository.repository_url
-}
-
-output ng_id {
-  value = aws_eks_node_group.node_group.id
-}

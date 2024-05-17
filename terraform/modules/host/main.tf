@@ -116,13 +116,25 @@ resource "aws_iam_role_policy_attachment" "node-AmazonEC2ContainerRegistryReadOn
 
 }
 
+resource "aws_iam_policy" "aws_lb_controller_policy" {
+  name        = "AWSLoadBalancerControllerIAMPolicy"
+  description = "IAM policy for AWS Load Balancer Controller"
+  policy      = file("${path.module}/aws_lb_controller_policy.json")
+}
+
+resource "aws_iam_role_policy_attachment" "node-AWSLoadBalancerControllerIAMPolicy" {
+  policy_arn = aws_iam_policy.aws_lb_controller_policy.arn
+  role       = aws_iam_role.node_role.name
+}
+
 resource "aws_eks_node_group" "node_group" {
 
   depends_on = [
     aws_eks_cluster.cluster,
     aws_iam_role_policy_attachment.node-AmazonEKSWorkerNodePolicy,
     aws_iam_role_policy_attachment.node-AmazonEKS_CNI_Policy,
-    aws_iam_role_policy_attachment.node-AmazonEC2ContainerRegistryReadOnly
+    aws_iam_role_policy_attachment.node-AmazonEC2ContainerRegistryReadOnly,
+    aws_iam_role_policy_attachment.node-AWSLoadBalancerControllerIAMPolicy
   ]
 
   cluster_name    = aws_eks_cluster.cluster.name
@@ -142,10 +154,4 @@ resource "aws_eks_node_group" "node_group" {
     project = var.project
   }
 
-}
-
-# ECR
-
-resource "aws_ecr_repository" "app_repository" {
-  name = "${var.project}-app"
 }

@@ -19,6 +19,7 @@ resource "aws_subnet" "eks_public_subnets" {
   tags = {
     Name    = "${var.project}-public-subnet-${count.index}"
     project = var.project
+    "kubernetes.io/role/elb" = "1"
   }
 }
 
@@ -31,6 +32,7 @@ resource "aws_subnet" "eks_private_subnets" {
   tags = {
     Name    = "${var.project}-private-subnet-${count.index}"
     project = var.project
+    "kubernetes.io/role/internal-elb"                  = "1"
   }
 }
 
