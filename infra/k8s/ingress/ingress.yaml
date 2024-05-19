@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-host
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  rules:
+  - host: "interviewlgc.sbx.arqui.dev"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/app"
+        backend:
+          service:
+            name: goserver-svc
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - "interviewlgc.sbx.arqui.dev"
+    secretName: letsencrypt-tls
