@@ -12,7 +12,28 @@ spec:
     http:
       paths:
       - pathType: Prefix
-        path: "/app"
+        path: "/"
+        backend:
+          service:
+            name: goserver-svc
+            port:
+              number: 80
+      - pathType: Prefix
+        path: "/healthz"
+        backend:
+          service:
+            name: goserver-svc
+            port:
+              number: 80
+      - pathType: Prefix
+        path: "/secrets"
+        backend:
+          service:
+            name: goserver-svc
+            port:
+              number: 80
+      - pathType: Prefix
+        path: "/turtles"
         backend:
           service:
             name: goserver-svc

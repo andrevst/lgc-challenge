@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: andrevst/goserver
-  tag: "1.2"
+  tag: "1.3"
   pullPolicy: IfNotPresent
 
 service:
@@ -33,4 +33,8 @@ secret:
 
 configmap:
   members: "Leonardo, Michelangelo, Donatello, Raphael"
-  weapons: "Katana, Nunchaku, Bo, Sai"
+
+ingress:
+  updateExisting: true
+  hostname: "interviewlgc.sbx.arqui.dev"
+  tlsSecretName: "letsencrypt-tls"

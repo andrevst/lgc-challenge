@@ -45,6 +45,9 @@ resource "aws_internet_gateway" "eks_igw" {
     Name    = "${var.project}-igw"
     project = var.project
   }
+  lifecycle {
+    create_before_destroy = true
+  }
   depends_on = [aws_vpc.eks_vpc]
 }
 
@@ -71,6 +74,9 @@ resource "aws_nat_gateway" "nat_gateway" {
     Name    = "${var.project}-nat-gateway"
     project = var.project
   }
+  lifecycle {
+    create_before_destroy = true
+  }
   depends_on = [aws_internet_gateway.eks_igw, aws_eip.nat_eip]
 }
 
@@ -83,6 +89,9 @@ resource "aws_route_table" "public_route_table" {
   tags = {
     Name    = "${var.project}-public-route-table"
     project = var.project
+  }
+  lifecycle {
+    create_before_destroy = true
   }
   depends_on = [aws_internet_gateway.eks_igw]
 }
@@ -104,6 +113,9 @@ resource "aws_route_table" "private_route_table" {
   tags = {
     Name    = "${var.project}-private-route-table-${count.index}"
     project = var.project
+  }
+  lifecycle {
+    create_before_destroy = true
   }
   depends_on = [aws_nat_gateway.nat_gateway]
 }

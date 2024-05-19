@@ -49,13 +49,3 @@ spec:
               name: {{ include "goserver.fullname" . }}-env
           - secretRef:
               name: {{ include "goserver.fullname" . }}-secret
-        volumeMounts:
-          - mountPath: "/turtles"
-            name: config
-      volumes:
-        - name: config
-          configMap:
-            name: {{ include "goserver.fullname" . }}-turtles
-            items:
-            - key: members
-              path: "turtles.txt"
