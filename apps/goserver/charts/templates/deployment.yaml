@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "goserver.fullname" . }}
+  labels:
+    app: {{ include "goserver.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "goserver.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "goserver.name" . }}
+    spec:
+      containers:
+      - name: goserver
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.resources.limits.cpu }}
+            memory: {{ .Values.resources.limits.memory }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          periodSeconds: 5
+          failureThreshold: 1
+          timeoutSeconds: 1
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          periodSeconds: 3
+          failureThreshold: 1
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+          periodSeconds: 3
+          failureThreshold: 30
+        envFrom:
+          - configMapRef:
+              name: {{ include "goserver.fullname" . }}-env
+          - secretRef:
+              name: {{ include "goserver.fullname" . }}-secret
+        volumeMounts:
+          - mountPath: "/turtles"
+            name: config
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "goserver.fullname" . }}-turtles
+            items:
+            - key: members
+              path: "turtles.txt"

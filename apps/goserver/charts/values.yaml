@@ -1,0 +1,36 @@
+replicaCount: 1
+
+image:
+  repository: andrevst/goserver
+  tag: "1.2"
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 80
+  nodePort: 30080
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 20Mi
+  limits:
+    cpu: 500m
+    memory: 100Mi
+
+hpa:
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 20
+
+env:
+  NAME: "Andre"
+  AGE: "34"
+
+secret:
+  USER: "YW5kcmV2c3=="
+  PASSWORD: "cGFzczR5b3=="
+
+configmap:
+  members: "Leonardo, Michelangelo, Donatello, Raphael"
+  weapons: "Katana, Nunchaku, Bo, Sai"
