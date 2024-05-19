@@ -29,5 +29,5 @@ KUBECONFIG
 
 resource "local_file" "kubeconfig" {
   content  = local.kubeconfig
-  filename = "kubeconfig.yaml"
+  filename = "../k8s/kubeconfig.yaml"
 }

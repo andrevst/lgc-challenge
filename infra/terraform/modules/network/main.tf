@@ -9,6 +9,7 @@ resource "aws_vpc" "eks_vpc" {
     project = var.project
   }
 }
+
 # Public Subnets
 resource "aws_subnet" "eks_public_subnets" {
   count                   = length(var.public_subnet_cidrs)
@@ -21,6 +22,7 @@ resource "aws_subnet" "eks_public_subnets" {
     project = var.project
     "kubernetes.io/role/elb" = "1"
   }
+  depends_on = [aws_vpc.eks_vpc]
 }
 
 # Private Subnets
@@ -32,8 +34,9 @@ resource "aws_subnet" "eks_private_subnets" {
   tags = {
     Name    = "${var.project}-private-subnet-${count.index}"
     project = var.project
-    "kubernetes.io/role/internal-elb"                  = "1"
+    "kubernetes.io/role/internal-elb" = "1"
   }
+  depends_on = [aws_vpc.eks_vpc]
 }
 
 resource "aws_internet_gateway" "eks_igw" {
@@ -42,6 +45,7 @@ resource "aws_internet_gateway" "eks_igw" {
     Name    = "${var.project}-igw"
     project = var.project
   }
+  depends_on = [aws_vpc.eks_vpc]
 }
 
 # NAT Gateway needs an Elastic IP
@@ -54,6 +58,7 @@ resource "aws_eip" "nat_eip" {
     Name    = "${var.project}-nat-eip"
     project = var.project
   }
+  depends_on = [aws_internet_gateway.eks_igw]
 }
 
 # NAT Gateway configuration for each public subnet
@@ -66,7 +71,7 @@ resource "aws_nat_gateway" "nat_gateway" {
     Name    = "${var.project}-nat-gateway"
     project = var.project
   }
-  depends_on = [aws_internet_gateway.eks_igw]
+  depends_on = [aws_internet_gateway.eks_igw, aws_eip.nat_eip]
 }
 
 resource "aws_route_table" "public_route_table" {
@@ -79,12 +84,14 @@ resource "aws_route_table" "public_route_table" {
     Name    = "${var.project}-public-route-table"
     project = var.project
   }
+  depends_on = [aws_internet_gateway.eks_igw]
 }
 
 resource "aws_route_table_association" "public_subnet_association" {
   count          = length(var.public_subnet_cidrs)
   subnet_id      = element(aws_subnet.eks_public_subnets.*.id, count.index)
   route_table_id = aws_route_table.public_route_table.id
+  depends_on     = [aws_route_table.public_route_table, aws_subnet.eks_public_subnets]
 }
 
 resource "aws_route_table" "private_route_table" {
@@ -98,10 +105,12 @@ resource "aws_route_table" "private_route_table" {
     Name    = "${var.project}-private-route-table-${count.index}"
     project = var.project
   }
+  depends_on = [aws_nat_gateway.nat_gateway]
 }
 
 resource "aws_route_table_association" "private_subnet_association" {
   count          = length(aws_subnet.eks_private_subnets.*.id)
   subnet_id      = aws_subnet.eks_private_subnets[count.index].id
   route_table_id = aws_route_table.private_route_table[count.index].id
+  depends_on     = [aws_route_table.private_route_table, aws_subnet.eks_private_subnets]
 }

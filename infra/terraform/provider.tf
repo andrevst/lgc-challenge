@@ -11,25 +11,15 @@ terraform {
     }
     helm = {
       source  = "hashicorp/helm"
-      version = ">= 2.0.0"
+      version = ">= 2.13.2"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = ">= 2.0.0"
+      version = ">= 2.3.0"
     }
   }
 }
 
 provider "aws" {
   region = var.region
-}
-
-provider "kubernetes" {
-  config_path = "kubeconfig.yaml"
-}
-
-provider "helm" {
-  kubernetes {
-    config_path = "kubeconfig.yaml"
-  }
 }
