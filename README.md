@@ -151,9 +151,7 @@ You can check CoreDNS, the Kubernetes CNI and AWS Load Balancer Controller are i
     kubectl get deployments -n kube-system coredns
     ```
     
-- **VPC CNI Plugin**:  It’s installed by default with the cluster. 
-
-Verify and configure via the ConfigMap if needed:
+- **VPC CNI Plugin**:  It’s installed by default with the cluster. Verify and configure via the ConfigMap if needed:
     
     ```
     kubectl get daemonset aws-node -n kube-system
