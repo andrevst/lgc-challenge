@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: andrevst/goserver
-  tag: "1.3"
+  tag: "1.0"
   pullPolicy: IfNotPresent
 
 service:
@@ -30,9 +30,6 @@ env:
 secret:
   USER: "YW5kcmV2c3=="
   PASSWORD: "cGFzczR5b3=="
-
-configmap:
-  members: "Leonardo, Michelangelo, Donatello, Raphael"
 
 ingress:
   updateExisting: true

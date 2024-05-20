@@ -1,10 +1,10 @@
 terraform {
   backend "s3" {
-    bucket         = "interviewlgc-tf-be"
+    bucket         = "interviewlgc-tf-state"
     key            = "terraform.tfstate"
     encrypt        = "false"
-    region         = "eu-west-1"
+    region         = "eu-west-2"
     session_name   = "terraform"
-    dynamodb_table = "interviewlgc-tf-state-lock"
+    dynamodb_table = "interviewlgc-tf-locktable"
   }
 }

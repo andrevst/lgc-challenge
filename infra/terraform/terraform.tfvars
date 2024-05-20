@@ -1,7 +1,7 @@
-region               = "eu-west-1"
+region               = "eu-west-2"
 project              = "interviewlgc"
-zone_id              = "Z011966476AFOO7K89EI"
-domain               = "sbx.arqui.dev"
+zone_id              = "ZKVP8KQ5VYKMA"
+domain               = "sandbox.letsgetchecked-dev1.com"
 cluster_name         = "interviewlgc-cluster"
 retention_days       = 7
 desired_size         = 3

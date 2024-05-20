@@ -1,13 +1,13 @@
 #!/bin/bash
 
-export PROJECT=$1
-export REGION=$2
+PROJECT=${PROJECT:-$1}
+REGION=${REGION:-$2}
 
-export BUCKET_NAME=$PROJECT-tf-be
-export DYNAMODB_TABLE=$PROJECT-tf-state-lock
+export BUCKET_NAME=$PROJECT-tf-state
+export DYNAMODB_TABLE=$PROJECT-tf-locktable
 
-echo "Create the S3 bucket for $PROJECT_NAME at $REGION"
-aws s3api create-bucket --bucket $BUCKET_NAME --region "$REGION" --acl private > /dev/null --create-bucket-configuration LocationConstraint
+echo "Create the S3 bucket for $PROJECT at $REGION"
+aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$REGION" --acl private --create-bucket-configuration LocationConstraint="$REGION" > /dev/null
 
 echo "Tagging it"
 
@@ -26,7 +26,7 @@ aws dynamodb create-table \
 
 echo "Generate backend.tf file"
 
-cat > ./terraform/backend.tf << EOL
+cat > ../terraform/backend.tf << EOL
 terraform {
   backend "s3" {
     bucket         = "${BUCKET_NAME}"
